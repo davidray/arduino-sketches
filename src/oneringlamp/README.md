@@ -1,6 +1,6 @@
 # One Lamp to Rule Them All
 
-![Picture of the One Ring Lamp]/src/oneringlamp/lamp.png
+![Picture of the One Ring Lamp]lamp.png
 
 # The 3D Models
 
@@ -8,7 +8,7 @@ https://www.printables.com/model/436448-lord-of-the-rings-lamp
 
 # The Circuit
 
-![Circuit Diagram]/circuit.png
+![Circuit Diagram]circuit.png
 
 # The Parts
 
