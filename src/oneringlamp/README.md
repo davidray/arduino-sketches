@@ -1,6 +1,6 @@
 # One Lamp to Rule Them All
 
-![Picture of the One Ring Lamp]/lamp.png
+![Picture of the One Ring Lamp]/src/oneringlamp/lamp.png
 
 # The 3D Models
 
