@@ -23,11 +23,12 @@ double brightnessFactor = 1.0;
 double brightnessFactorStep = 0.1;
 int brightnessUp = false;
 
-unsigned long lastDebounceTime = 0;  // the last time the output pin was toggled
+unsigned long lastDebounceTime = 0;  // the last time the output pin /Users/dave/code/arduino-sketches/src/oneringlamp/roatatingModes.inowas toggled
 unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
 
 void setup() {
+  delay( 3000 );
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
   pinMode(buttonPin, INPUT);
 }
