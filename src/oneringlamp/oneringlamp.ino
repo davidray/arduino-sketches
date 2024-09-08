@@ -7,7 +7,7 @@
 #define NUM_LEDS 60
 #define DATA_PIN 6
 #define DELAY 50
-#define NUM_MODES 7
+#define NUM_MODES 9
 #define CHASE 0
 #define BLINK 1
 #define SOLID 2
@@ -15,6 +15,8 @@
 #define PACIFICA 4
 #define CHASE_XMAS 5
 #define FIRE2012 6
+#define SOLID_GOLD 7
+#define SOLID_GOLD_CHASE 8
 #define MAX_POWER_MILLIAMPS 500
 #define LED_TYPE            WS2812B
 #define COLOR_ORDER         GRB
@@ -36,6 +38,7 @@ unsigned long debounceDelay = 50;    // the debounce time; increase if the outpu
 // Initialize all the mode classes
 Chase chase(15, NUM_LEDS);
 Chase chaseXmas(30, NUM_LEDS);
+Chase solidGoldChase(45, NUM_LEDS);
 Fire2012 fire2012(NUM_LEDS);
 Pacifica pacifica(NUM_LEDS);
 
@@ -46,8 +49,9 @@ void setup() {
   digitalWrite(buttonPin, HIGH);
 
   // Start all the mode classes
-  chase.start(leds, CRGB::DarkGoldenrod, CRGB::Black);
+  chase.start(leds, CRGB::Purple, CRGB::Green);
   chaseXmas.start(leds, CRGB::Red, CRGB::Green);
+  solidGoldChase.start(leds, CRGB::Gold, CRGB::Black);
   fire2012.start(leds);
   pacifica.start(leds);
 }
@@ -55,7 +59,7 @@ void setup() {
 void loop() {
   checkMode();
   gBrightness = analogRead(potPin) / 4;
-  resetBrightnessFactor();
+  
   switch (mode) {
     case CHASE:
       chase.advance(count);
@@ -64,13 +68,13 @@ void loop() {
       chaseXmas.advance(count);
       break;
     case BLINK:
-      blink();
+      blink(count);
       break;
     case SOLID:
       solid(CRGB::Red);
       break;
     case PULSE:
-      pulse();
+      gBrightness = pulseBrightness(count, gBrightness, 30);
       break;
     case PACIFICA:
       pacifica.loop();
@@ -78,12 +82,18 @@ void loop() {
     case FIRE2012:
       fire2012.loop();
       break;
+    case SOLID_GOLD:
+      solid(CRGB::Gold);
+      break;
+    case SOLID_GOLD_CHASE:
+      solidGoldChase.advance(count);
+      break;
     default:
       leds[30] = CRGB::Yellow;
       // mode = SOLID;
       // solid();
   }
-  FastLED[0].showLeds(gBrightness * brightnessFactor);
+  FastLED[0].showLeds(gBrightness);
   count++;
   delay(DELAY);
 }
@@ -112,12 +122,6 @@ void checkMode() {
   lastButtonState = reading;
 }
 
-void resetBrightnessFactor() {
-  if (mode != PULSE) {
-    brightnessFactor = 1;
-  }
-}
-
 int getMode() {
   return modeChanges % NUM_MODES;
 }
@@ -135,11 +139,10 @@ void blink(int count) {
   }
 }
 
-void pulse(int count) {
+int pulseBrightness(int count, int brightness, int steps) {
   setAllLeds(CRGB::DarkGoldenrod);
-  brightnessAdjustment = ((count%10 > 5) - 10)/10
-  
-  brightnessFactor = brightnessFactor * brightnessAdjustment
+  int medianBrightness = brightness/2;
+  return(medianBrightness + medianBrightness*((count % steps) - steps)/steps);
 }
 
 void setAllLeds(CRGB::HTMLColorCode color) {
