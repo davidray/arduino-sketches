@@ -3,7 +3,8 @@
 <img src="./lamp.png">
 
 # The Code
-The code supports a dimmer dial and a button for changing modes. I could probably have used pre-built code for the modes, but I am using this to learn how to control LEDs with Arduino so I have been trying to make the different modes myself.
+The code supports a dimmer dial and a button for changing modes. Some of the modes were lifted from
+the FastLED samples.
 
 # The 3D Models
 
