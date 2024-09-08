@@ -1,30 +1,35 @@
+/// @file    Pacifica.ino
+/// @brief   Gentle, blue-green ocean wave animation
+/// @example Pacifica.ino
+
 //
 //  "Pacifica"
 //  Gentle, blue-green ocean waves.
 //  December 2019, Mark Kriegsman and Mary Corey March.
 //  For Dan.
 //
- 
+
 #define FASTLED_ALLOW_INTERRUPTS 0
 #include <FastLED.h>
 FASTLED_USING_NAMESPACE
- 
-#define DATA_PIN            6
+
+#define DATA_PIN            3
 #define NUM_LEDS            60
 #define MAX_POWER_MILLIAMPS 500
 #define LED_TYPE            WS2812B
 #define COLOR_ORDER         GRB
- 
- 
+
+//////////////////////////////////////////////////////////////////////////
+
 CRGB leds[NUM_LEDS];
- 
+
 void setup() {
   delay( 3000); // 3 second delay for boot recovery, and a moment of silence
   FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS)
         .setCorrection( TypicalLEDStrip );
   FastLED.setMaxPowerInVoltsAndMilliamps( 5, MAX_POWER_MILLIAMPS);
 }
- 
+
 void loop()
 {
   EVERY_N_MILLISECONDS( 20) {
@@ -32,13 +37,15 @@ void loop()
     FastLED.show();
   }
 }
- 
+
+//////////////////////////////////////////////////////////////////////////
 //
 // The code for this animation is more complicated than other examples, and 
 // while it is "ready to run", and documented in general, it is probably not 
 // the best starting point for learning.  Nevertheless, it does illustrate some
 // useful techniques.
 //
+//////////////////////////////////////////////////////////////////////////
 //
 // In this animation, there are four "layers" of waves of light.  
 //
@@ -65,8 +72,8 @@ CRGBPalette16 pacifica_palette_2 =
 CRGBPalette16 pacifica_palette_3 = 
     { 0x000208, 0x00030E, 0x000514, 0x00061A, 0x000820, 0x000927, 0x000B2D, 0x000C33, 
       0x000E39, 0x001040, 0x001450, 0x001860, 0x001C70, 0x002080, 0x1040BF, 0x2060FF };
- 
- 
+
+
 void pacifica_loop()
 {
   // Increment the four "color index start" counters, one for each wave layer.
@@ -85,23 +92,23 @@ void pacifica_loop()
   sCIStart2 -= (deltams21 * beatsin88(777,8,11));
   sCIStart3 -= (deltams1 * beatsin88(501,5,7));
   sCIStart4 -= (deltams2 * beatsin88(257,4,6));
- 
+
   // Clear out the LED array to a dim background blue-green
   fill_solid( leds, NUM_LEDS, CRGB( 2, 6, 10));
- 
+
   // Render each of four layers, with different scales and speeds, that vary over time
   pacifica_one_layer( pacifica_palette_1, sCIStart1, beatsin16( 3, 11 * 256, 14 * 256), beatsin8( 10, 70, 130), 0-beat16( 301) );
   pacifica_one_layer( pacifica_palette_2, sCIStart2, beatsin16( 4,  6 * 256,  9 * 256), beatsin8( 17, 40,  80), beat16( 401) );
   pacifica_one_layer( pacifica_palette_3, sCIStart3, 6 * 256, beatsin8( 9, 10,38), 0-beat16(503));
   pacifica_one_layer( pacifica_palette_3, sCIStart4, 5 * 256, beatsin8( 8, 10,28), beat16(601));
- 
+
   // Add brighter 'whitecaps' where the waves lines up more
   pacifica_add_whitecaps();
- 
+
   // Deepen the blues and greens a bit
   pacifica_deepen_colors();
 }
- 
+
 // Add one layer of waves into the led array
 void pacifica_one_layer( CRGBPalette16& p, uint16_t cistart, uint16_t wavescale, uint8_t bri, uint16_t ioff)
 {
@@ -119,7 +126,7 @@ void pacifica_one_layer( CRGBPalette16& p, uint16_t cistart, uint16_t wavescale,
     leds[i] += c;
   }
 }
- 
+
 // Add extra 'white' to areas where the four layers of light have lined up brightly
 void pacifica_add_whitecaps()
 {
@@ -137,7 +144,7 @@ void pacifica_add_whitecaps()
     }
   }
 }
- 
+
 // Deepen the blues and greens
 void pacifica_deepen_colors()
 {

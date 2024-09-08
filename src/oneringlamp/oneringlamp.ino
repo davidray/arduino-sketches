@@ -1,36 +1,55 @@
+#include <Chase.h>
+#include <Pacifica.h>
+#include <Fire2012.h>
 #include <FastLED.h>
-#define NUM_LEDS 64
+
+
+#define NUM_LEDS 60
 #define DATA_PIN 6
-#define DELAY 100
-#define LAST_MODE 3
+#define DELAY 50
+#define NUM_MODES 7
 #define CHASE 0
 #define BLINK 1
 #define SOLID 2
 #define PULSE 3
+#define PACIFICA 4
+#define CHASE_XMAS 5
+#define FIRE2012 6
+#define MAX_POWER_MILLIAMPS 500
+#define LED_TYPE            WS2812B
+#define COLOR_ORDER         GRB
 
-const int buttonPin = 12;
+const int buttonPin = 11;
 const int potPin = A3;
 
 CRGB leds[NUM_LEDS];
 uint8_t gBrightness = 250;
 int potVal = 0;
-int mode = PULSE;
+int modeChanges = 0;
+int mode = CHASE;
 int buttonState;
 int lastButtonState = LOW;
-int blinkOn = true;
-int dot = 0;
-double brightnessFactor = 1.0;
-double brightnessFactorStep = 0.1;
-int brightnessUp = false;
-
+int count = 0;
 unsigned long lastDebounceTime = 0;  // the last time the output pin /Users/dave/code/arduino-sketches/src/oneringlamp/roatatingModes.inowas toggled
 unsigned long debounceDelay = 50;    // the debounce time; increase if the output flickers
 
+// Initialize all the mode classes
+Chase chase(15, NUM_LEDS);
+Chase chaseXmas(30, NUM_LEDS);
+Fire2012 fire2012(NUM_LEDS);
+Pacifica pacifica(NUM_LEDS);
 
 void setup() {
   delay( 3000 );
   FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
   pinMode(buttonPin, INPUT);
+  digitalWrite(buttonPin, HIGH);
+
+  // Start all the mode classes
+  chase.start(leds, CRGB::DarkGoldenrod, CRGB::Black);
+  chaseXmas.start(leds, CRGB::Red, CRGB::Green);
+  fire2012.start(leds);
+  pacifica.start(leds);
 }
 
 void loop() {
@@ -39,22 +58,33 @@ void loop() {
   resetBrightnessFactor();
   switch (mode) {
     case CHASE:
-      chase();
+      chase.advance(count);
+      break;
+    case CHASE_XMAS:
+      chaseXmas.advance(count);
       break;
     case BLINK:
       blink();
       break;
     case SOLID:
-      solid();
+      solid(CRGB::Red);
       break;
     case PULSE:
       pulse();
       break;
+    case PACIFICA:
+      pacifica.loop();
+      break;
+    case FIRE2012:
+      fire2012.loop();
+      break;
     default:
-      mode = SOLID;
-      solid();
+      leds[30] = CRGB::Yellow;
+      // mode = SOLID;
+      // solid();
   }
   FastLED[0].showLeds(gBrightness * brightnessFactor);
+  count++;
   delay(DELAY);
 }
 
@@ -71,9 +101,11 @@ void checkMode() {
     if (reading != buttonState) {
       buttonState = reading;
 
-      // only toggle the LED if the new button state is HIGH
-      if (buttonState == HIGH) {
-        mode = bumpMode(mode);
+      // only toggle the LED if the new button state is LOW
+      if (buttonState == LOW) {
+        modeChanges++;
+        mode = getMode();
+        setAllLeds(CRGB::Black);
       }
     }
   }
@@ -86,38 +118,28 @@ void resetBrightnessFactor() {
   }
 }
 
-int bumpMode(int mode) {
-  if (mode < LAST_MODE) {
-    return mode + 1;
-  }
-  return 0;
+int getMode() {
+  return modeChanges % NUM_MODES;
 }
 
-void solid() {
-  setAllLeds(CRGB::Red);
+void solid(CRGB::HTMLColorCode color) {
+  setAllLeds(color);
 }
 
-void blink() {
-  if (blinkOn) {
+void blink(int count) {
+  
+  if (count%2 == 0) {
     setAllLeds(CRGB::Blue);
   } else {
     setAllLeds(CRGB::Black);
   }
-  blinkOn = !blinkOn;
 }
 
-void pulse() {
+void pulse(int count) {
   setAllLeds(CRGB::DarkGoldenrod);
-  if (brightnessUp) {
-    brightnessFactor = brightnessFactor + brightnessFactorStep;
-  } else {
-    brightnessFactor = brightnessFactor - brightnessFactorStep;
-  }
-  if (brightnessFactor < -0.4) {
-    brightnessUp = true;
-  } else if (brightnessFactor > 1.0) {
-    brightnessUp = false;
-  }
+  brightnessAdjustment = ((count%10 > 5) - 10)/10
+  
+  brightnessFactor = brightnessFactor * brightnessAdjustment
 }
 
 void setAllLeds(CRGB::HTMLColorCode color) {
@@ -127,38 +149,4 @@ void setAllLeds(CRGB::HTMLColorCode color) {
 }
 void purple() {
   setAllLeds(CRGB::Purple);
-}
-
-void chase() {
-  int width = 20;
-  int speed = 6;
-
-  int offDot = dot;
-  leds[dot] = CRGB::Black;
-
-  for (int i = 0; i < speed; i++) {
-    leds[offDot] = CRGB::Black;
-    offDot = nextDot(offDot);
-    dot = nextDot(dot);
-  }
-
-  int onDot = dot;
-  for (int i = 0; i < width; i++) {
-    leds[onDot] = CRGB::Red;
-    onDot = nextDot(onDot);
-  }
-}
-
-int prevDot(int dot) {
-  if (dot > 0) {
-    return dot - 1;
-  }
-  return 59;
-}
-
-int nextDot(int dot) {
-  if (dot < NUM_LEDS) {
-    return dot + 1;
-  }
-  return 0;
 }
