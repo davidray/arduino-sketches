@@ -5,8 +5,8 @@
 
 #define NUM_LEDS 60
 #define DATA_PIN 6
-#define DELAY 50
-#define NUM_MODES 9
+#define DELAY 100
+#define NUM_MODES 10
 #define CHASE 0
 #define BLINK 1
 #define SOLID 2
@@ -16,6 +16,7 @@
 #define FIRE2012 6
 #define SOLID_GOLD 7
 #define SOLID_GOLD_CHASE 8
+#define BYU 9
 #define MAX_POWER_MILLIAMPS 500
 #define LED_TYPE WS2812B
 #define COLOR_ORDER GRB
@@ -35,9 +36,10 @@ unsigned long lastDebounceTime = 0; // the last time the output pin /Users/dave/
 unsigned long debounceDelay = 50;   // the debounce time; increase if the output flickers
 
 // Initialize all the mode classes
-Chase chase(15, NUM_LEDS);
+Chase chase(30, NUM_LEDS);
 Chase chaseXmas(30, NUM_LEDS);
-Chase solidGoldChase(45, NUM_LEDS);
+Chase solidGoldChase(30, NUM_LEDS);
+Chase byu(30, NUM_LEDS);
 Fire2012 fire2012(NUM_LEDS);
 Pacifica pacifica(NUM_LEDS);
 
@@ -49,7 +51,8 @@ void setup()
   digitalWrite(buttonPin, HIGH);
 
   // Start all the mode classes
-  chase.start(leds, CRGB::Purple, CRGB::Green);
+  chase.start(leds, CRGB::Red, CRGB::MediumVioletRed);
+  byu.start(leds, CRGB::White, CRGB::Blue);
   chaseXmas.start(leds, CRGB::Red, CRGB::Green);
   solidGoldChase.start(leds, CRGB::Gold, CRGB::Black);
   fire2012.start(leds);
@@ -90,17 +93,20 @@ void loop()
   case SOLID_GOLD_CHASE:
     solidGoldChase.advance(count);
     break;
+  case BYU:
+    byu.advance(count);
+    break;
   default:
     leds[30] = CRGB::Yellow;
   }
   FastLED[0].showLeds(gBrightness);
   if (count > 10000)
   {
-    count = 0
+    count = 0;
   }
   else
   {
-    count++
+    count++;
   };
   delay(DELAY);
 }
@@ -127,11 +133,11 @@ void checkMode()
       {
         if (modeChanges > 10000)
         {
-          modeChanges = 0
+          modeChanges = 0;
         }
         else
         {
-          modeChanges++
+          modeChanges++;
         };
         mode = getMode();
         setAllLeds(CRGB::Black);
